@@ -1,17 +1,31 @@
 self.addEventListener("install", e => {
-  console.log("Installing service worker", e);
+  e.waitUntil(
+    caches.open("static").then(cache => {
+      console.log("precaching app shell");
+      cache.add("/");
+      cache.add("/index.html");
+      cache.add("/src/js/app.js");
+    })
+  );
 });
 
 self.addEventListener("activate", e => {
-  console.log("Activating service worker", e);
   return self.clients.claim();
 });
 
 self.addEventListener("fetch", e => {
-  console.log("fetch e", e.request.url);
   try {
-    e.respondWith(fetch(e.request));
+    e.respondWith(
+      caches
+        .match(e.request)
+        .then(resp => {
+          if (resp) console.log(e.request, resp);
+          if (resp) return resp;
+          else return fetch(e.request);
+        })
+        .catch(e => console.log("cache error", e))
+    );
   } catch (e) {
-    donsole.error("Error! Fetch failed with:", e);
+    console.error("Error! Fetch failed with:", e);
   }
 });
