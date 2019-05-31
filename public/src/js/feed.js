@@ -25,6 +25,20 @@ shareImageButton.addEventListener("click", openCreatePostModal);
 
 closeCreatePostModalButton.addEventListener("click", closeCreatePostModal);
 
+// below is use when dynamic fetching is disable and user controls the cache
+const onSavedButtonClicked = e => {
+  console.log("clicked");
+  if ("caches" in window) {
+    caches.open("user-requested").then(cache => {
+      cache.addAll(["https://httpbin.org/get", "/src/images/sf-boat.jpg"]);
+    });
+  }
+};
+
+function clearCards() {
+  while (sharedMomentsArea.hasChildNodes())
+    sharedMomentsArea.removeChild(sharedMomentsArea.lastChild);
+}
 function createCard() {
   var cardWrapper = document.createElement("div");
   cardWrapper.className = "shared-moment-card mdl-card mdl-shadow--2dp";
@@ -43,15 +57,40 @@ function createCard() {
   cardSupportingText.className = "mdl-card__supporting-text";
   cardSupportingText.textContent = "In San Francisco";
   cardSupportingText.style.textAlign = "center";
+  // below is use when dynamic fetching is disable and user controls the cache
+  // const cardSaveButton = document.createElement("button");
+  // cardSaveButton.textContent = "Save";
+  // cardSaveButton.addEventListener("click", onSavedButtonClicked);
+  // cardSupportingText.appendChild(cardSaveButton);
   cardWrapper.appendChild(cardSupportingText);
   componentHandler.upgradeElement(cardWrapper);
   sharedMomentsArea.appendChild(cardWrapper);
 }
 
-fetch("https://httpbin.org/get")
+const url = "https://httpbin.org/get";
+let networkDataReceived = false;
+
+fetch(url)
   .then(function(res) {
     return res.json();
   })
   .then(function(data) {
+    networkDataReceived = true;
+    console.log("from web", data);
+    clearCards();
     createCard();
-  });
+  })
+  .catch(e => console.error("Failed https..get fetch with => ", e.message));
+
+if ("caches" in window) {
+  caches
+    .match(url)
+    .then(response => (response ? response.json() : null))
+    .then(data => {
+      console.log("from cache", data);
+      if (!networkDataReceived) {
+        clearCards();
+        createCard();
+      }
+    });
+}
