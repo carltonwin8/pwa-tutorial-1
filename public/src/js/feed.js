@@ -36,6 +36,7 @@ function createCard() {
   cardWrapper.appendChild(cardTitle);
   var cardTitleTextElement = document.createElement("h2");
   cardTitleTextElement.className = "mdl-card__title-text";
+  cardTitleTextElement.style.color = "white";
   cardTitleTextElement.textContent = "San Francisco Trip";
   cardTitle.appendChild(cardTitleTextElement);
   var cardSupportingText = document.createElement("div");
