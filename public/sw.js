@@ -68,7 +68,7 @@ function isInArray(string, array) {
 // self.addEventListener("fetch-and-cache-network", e => {
 self.addEventListener("fetch", event => {
   try {
-    const url = "https://httpbin.org/get";
+    const url = "https://pwagram-6bbfe.firebaseio.com/posts.json";
     if (event.request.url.indexOf(url) > -1) {
       event.respondWith(
         caches.open(CACHE_DYNAMIC_NAME).then(cache => {

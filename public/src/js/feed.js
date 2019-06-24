@@ -46,23 +46,24 @@ function clearCards() {
   while (sharedMomentsArea.hasChildNodes())
     sharedMomentsArea.removeChild(sharedMomentsArea.lastChild);
 }
-function createCard() {
+function createCard(data) {
+  if (!data) return;
   var cardWrapper = document.createElement("div");
   cardWrapper.className = "shared-moment-card mdl-card mdl-shadow--2dp";
   var cardTitle = document.createElement("div");
   cardTitle.className = "mdl-card__title";
-  cardTitle.style.backgroundImage = 'url("/src/images/sf-boat.jpg")';
+  cardTitle.style.backgroundImage = `url("${data.image}")`;
   cardTitle.style.backgroundSize = "cover";
   cardTitle.style.height = "180px";
   cardWrapper.appendChild(cardTitle);
   var cardTitleTextElement = document.createElement("h2");
   cardTitleTextElement.className = "mdl-card__title-text";
   cardTitleTextElement.style.color = "white";
-  cardTitleTextElement.textContent = "San Francisco Trip";
+  cardTitleTextElement.textContent = data.title;
   cardTitle.appendChild(cardTitleTextElement);
   var cardSupportingText = document.createElement("div");
   cardSupportingText.className = "mdl-card__supporting-text";
-  cardSupportingText.textContent = "In San Francisco";
+  cardSupportingText.textContent = data.location;
   cardSupportingText.style.textAlign = "center";
   // below is use when dynamic fetching is disable and user controls the cache
   // const cardSaveButton = document.createElement("button");
@@ -74,7 +75,13 @@ function createCard() {
   sharedMomentsArea.appendChild(cardWrapper);
 }
 
-const url = "https://httpbin.org/get";
+function updateUI(data) {
+  clearCards();
+  for (let i = 0; i < data.length; i++) {
+    createCard(data[i]);
+  }
+}
+const url = "https://pwagram-6bbfe.firebaseio.com/posts.json";
 let networkDataReceived = false;
 
 fetch(url)
@@ -83,9 +90,10 @@ fetch(url)
   })
   .then(function(data) {
     networkDataReceived = true;
-    console.log("from web", data);
-    clearCards();
-    createCard();
+    const dataArray = [];
+    for (let key in data) dataArray.push(data[key]);
+    console.log("from web", dataArray);
+    updateUI(dataArray);
   })
   .catch(e => console.error("Failed https..get fetch with => ", e.message));
 
@@ -96,8 +104,9 @@ if ("caches" in window) {
     .then(data => {
       console.log("from cache", data);
       if (!networkDataReceived) {
-        clearCards();
-        createCard();
+        const dataArray = [];
+        for (let key in data) dataArray.push(data[key]);
+        updateUI(dataArray);
       }
     });
 }
