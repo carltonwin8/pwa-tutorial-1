@@ -44,6 +44,14 @@ self.addEventListener("activate", e => {
   return self.clients.claim();
 });
 
+// use function before adding new item to dynamic cache so it does grow indefinitely
+async function trimCache(cacheName, maxItems) {
+  const cache = await caches.open(cacheName);
+  const keys = await cache.keys();
+  cache.delete(keys[0]);
+  trimCache(cacheName, maxItems);
+}
+
 function isInArray(string, array) {
   var cachePath;
   if (string.indexOf(self.origin) === 0) {
