@@ -89,7 +89,9 @@ self.addEventListener("fetch", event => {
                 .catch(err => {
                   console.log("dynamic response failed for", event.request);
                   return caches.open(CACHE_STATIC_NAME).then(cache => {
-                    if (event.request.url.indexOf("/help") > -1) {
+                    if (
+                      event.request.headers.get("accept").includes("text/html")
+                    ) {
                       return cache.match("/offline.html").then(resp2 => {
                         console.log("match", resp2);
                         return resp2;
