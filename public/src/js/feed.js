@@ -7,6 +7,13 @@ var sharedMomentsArea = document.querySelector("#shared-moments");
 
 function openCreatePostModal() {
   createPostArea.style.display = "block";
+  // if ("serviceWorker" in navigator) {
+  //   navigator.serviceWorker.getRegistrations().then(regs => {
+  //     for (let i = 0; i < regs.length; i++) {
+  //       regs[i].unregister();
+  //     }
+  //   });
+  // }
   if (!deferredPrompt) return;
   deferredPrompt.prompt();
   deferredPrompt.userChoice.then(result => {
