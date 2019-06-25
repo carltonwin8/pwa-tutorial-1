@@ -7,6 +7,7 @@ var sharedMomentsArea = document.querySelector("#shared-moments");
 
 function openCreatePostModal() {
   createPostArea.style.display = "block";
+  createPostArea.style.transform = "translateY(0)";
   // if ("serviceWorker" in navigator) {
   //   navigator.serviceWorker.getRegistrations().then(regs => {
   //     for (let i = 0; i < regs.length; i++) {
@@ -25,7 +26,7 @@ function openCreatePostModal() {
 }
 
 function closeCreatePostModal() {
-  createPostArea.style.display = "none";
+  createPostArea.style.transform = "translateY(100vh)";
 }
 
 shareImageButton.addEventListener("click", openCreatePostModal);
@@ -54,6 +55,7 @@ function createCard(data) {
   cardTitle.className = "mdl-card__title";
   cardTitle.style.backgroundImage = `url("${data.image}")`;
   cardTitle.style.backgroundSize = "cover";
+  cardTitle.style.backgroundPosition = "center";
   //cardTitle.style.height = "180px";
   cardWrapper.appendChild(cardTitle);
   var cardTitleTextElement = document.createElement("h2");
