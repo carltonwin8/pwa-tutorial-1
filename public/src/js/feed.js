@@ -97,16 +97,10 @@ fetch(url)
   })
   .catch(e => console.error("Failed https..get fetch with => ", e.message));
 
-if ("caches" in window) {
-  caches
-    .match(url)
-    .then(response => (response ? response.json() : null))
-    .then(data => {
-      console.log("from cache", data);
-      if (!networkDataReceived) {
-        const dataArray = [];
-        for (let key in data) dataArray.push(data[key]);
-        updateUI(dataArray);
-      }
-    });
+if ("indexedDB" in window) {
+  readAllData("posts").then(data => {
+    if (networkDataReceived) return;
+    console.log("From indexDB", data);
+    updateUI(data);
+  });
 }

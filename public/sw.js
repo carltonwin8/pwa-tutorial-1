@@ -1,4 +1,7 @@
-const version = "v7";
+importScripts("/src/js/idb.js");
+importScripts("/src/js/utility.js");
+
+const version = "v8";
 var CACHE_STATIC_NAME = `static-${version}`;
 var CACHE_DYNAMIC_NAME = `dynamic-${version}`;
 
@@ -10,6 +13,7 @@ const STATIC_FILES = [
   "/manifest.json",
   "/src/images/main-image.jpg",
   "/src/js/app.js",
+  "/src/js/idb.js",
   "/src/js/feed.js",
   "/src/css/app.css",
   "/src/css/feed.css",
@@ -71,11 +75,12 @@ self.addEventListener("fetch", event => {
     const url = "https://pwagram-6bbfe.firebaseio.com/posts.json";
     if (event.request.url.indexOf(url) > -1) {
       event.respondWith(
-        caches.open(CACHE_DYNAMIC_NAME).then(cache => {
-          return fetch(event.request).then(response => {
-            cache.put(event.request, response.clone());
-            return response;
+        fetch(event.request).then(response => {
+          const clonedResp = response.clone();
+          clonedResp.json().then(data => {
+            for (let key in data) writeData("posts", data[key]);
           });
+          return response;
         })
       );
     } else if (isInArray(event.request.url, STATIC_FILES)) {
