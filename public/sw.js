@@ -176,3 +176,32 @@ self.addEventListener("fetch-network-cache", e => {
     console.error("Error! Fetch failed with:", e);
   }
 });
+
+self.addEventListener("sync", event => {
+  console.log("bg sync", event);
+  if (event.tag === "sync-new-post") {
+    console.log("syn new post");
+    event.waitUntil(
+      readAllData("sync-posts").then(data => {
+        for (let dt of data) {
+          console.log("db data", dt);
+          fetch("https://pwagram-6bbfe.firebaseio.com/posts.json", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Accept: "application/json"
+            },
+            body: JSON.stringify(dt)
+          })
+            .then(resp => {
+              console.log("Send Data", resp);
+              if (resp.ok) {
+                deletItemFromData("sync-posts", dt.id);
+              }
+            })
+            .catch(err => console.error("Error sending data", err));
+        }
+      })
+    );
+  }
+});

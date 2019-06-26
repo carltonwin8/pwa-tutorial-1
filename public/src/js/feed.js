@@ -4,6 +4,9 @@ var closeCreatePostModalButton = document.querySelector(
   "#close-create-post-modal-btn"
 );
 var sharedMomentsArea = document.querySelector("#shared-moments");
+var form = document.querySelector("form");
+var titleInput = document.querySelector("#title");
+var locationInput = document.querySelector("#location");
 
 function openCreatePostModal() {
   createPostArea.style.display = "block";
@@ -106,3 +109,52 @@ if ("indexedDB" in window) {
     updateUI(data);
   });
 }
+
+function sendData(data) {
+  fetch("https://pwagram-6bbfe.firebaseio.com/posts.json", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json"
+    },
+    body: JSON.stringify(data)
+  }).then(resp => {
+    console.log("Send Data", resp);
+    updateUI();
+  });
+}
+
+form.addEventListener("submit", event => {
+  event.preventDefault();
+  if (titleInput.value.trim() === "" || locationInput.value.trim() === "") {
+    return alert("Please enter valid data");
+  }
+  closeCreatePostModal();
+
+  const post = {
+    title: titleInput.value,
+    location: locationInput.value,
+    id: new Date().toISOString(),
+    image:
+      "https://firebasestorage.googleapis.com/v0/b/pwagram-6bbfe.appspot.com/o/sf-boat.jpg?alt=media&token=5b1a248a-e2b4-4e88-97e0-cf2bb489f033"
+  };
+
+  if ("serviceWorker" in navigator && "SyncManager" in window) {
+    navigator.serviceWorker.ready.then(sw => {
+      writeData("sync-posts", post)
+        .then(() => {
+          return sw.sync.register("sync-new-post");
+        })
+        .then(() => {
+          const snackBarContainer = document.querySelector(
+            "#confirmation-toast"
+          );
+          const data = { message: "Your post has been saved for syncing!" };
+          snackBarContainer.MaterialSnackbar.showSnackbar(data);
+        })
+        .catch(err => console.error(err));
+    });
+  } else {
+    sendData(post);
+  }
+});
