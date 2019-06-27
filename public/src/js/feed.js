@@ -111,11 +111,12 @@ if ("indexedDB" in window) {
 }
 
 function sendData(data) {
-  fetch("https://pwagram-6bbfe.firebaseio.com/posts.json", {
+  fetch("https://us-central1-pwagram-6bbfe.cloudfunctions.net/helloWorld", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Accept: "application/json"
+      Accept: "application/json",
+      "Access-Control-Allow-Origin": "http://localhost:8080"
     },
     body: JSON.stringify(data)
   }).then(resp => {
