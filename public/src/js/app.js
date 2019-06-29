@@ -24,10 +24,22 @@ window.addEventListener("beforeinstallprompt", e => {
 });
 
 function displayConfirmNotification() {
-  const options = {
-    body: "You successfully subscribed to our Notificatin service."
-  };
-  new Notification("Successfully subscribed!", options);
+  if ("serviceWorker" in navigator) {
+    const options = {
+      body: "You successfully subscribed to our Notificatin service.",
+      icon: "/src/images/icons/app-icon-96x96.png",
+      image: "/src/images/sf-boat.jpg",
+      dir: "ltr",
+      lang: "en-US", // BCP 47 language tag
+      vibrate: [100, 50, 200], // vibration, pause, vibration
+      badge: "/src/images/icons/app-icon-96x96.png",
+      tag: "confirm-notification",
+      renotify: true
+    };
+    navigator.serviceWorker.ready.then(swreg => {
+      swreg.showNotification("sw Successfully subscribed", options);
+    });
+  }
 }
 function askForNotificationPermision() {
   Notification.requestPermission(result => {
