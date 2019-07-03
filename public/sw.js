@@ -210,3 +210,18 @@ self.addEventListener("sync", event => {
     );
   }
 });
+
+self.addEventListener("notificationclick", event => {
+  const { notification, action } = event;
+  console.log("noti action", notification, action);
+  if (action == "confirm") {
+    console.log("Confirm was chosen");
+  } else {
+    console.log(action);
+  }
+  notification.close();
+});
+
+self.addEventListener("notificationclose", event => {
+  console.log("noti closed", event);
+});
