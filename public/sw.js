@@ -216,10 +216,24 @@ self.addEventListener("notificationclick", event => {
   console.log("noti action", notification, action);
   if (action == "confirm") {
     console.log("Confirm was chosen");
+    notification.close();
   } else {
     console.log(action);
+    event.waitUntil(
+      clients.matchAll().then(clnts => {
+        const client = clnts.find(clnt => {
+          return (clnt.visibilityState = "visible");
+        });
+        if (client !== undefined) {
+          client.navigate("http://localhost:8080");
+          client.focus();
+        } else {
+          client.openWindow("http://localhost:8080");
+        }
+        notification.close();
+      })
+    );
   }
-  notification.close();
 });
 
 self.addEventListener("notificationclose", event => {
