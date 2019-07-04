@@ -11,3 +11,4 @@ Use:
 - `firebase init`
   - select functions and hosting
 - `firebase deploy` - to deploy once code added to the functions directory
+- `npm install web-push` and `npx web-push generate-vapid-keys` for keys

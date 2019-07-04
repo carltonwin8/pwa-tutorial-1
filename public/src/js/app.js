@@ -49,18 +49,58 @@ function displayConfirmNotification() {
       ]
     };
     navigator.serviceWorker.ready.then(swreg => {
-      swreg.showNotification("sw Successfully subscribed", options);
+      swreg.showNotification("Successfully subscribed", options);
     });
   }
 }
+
+function configurePushSub() {
+  if (!("serviceWorker" in navigator)) return;
+
+  let reg;
+  navigator.serviceWorker.ready
+    .then(swreg => {
+      reg = swreg;
+      return swreg.pushManager.getSubscription();
+    })
+    .then(sub => {
+      if (sub === null) {
+        const vapidPublicKey =
+          "BNHpuT3_GM0OItLIxbt71a36JD4g6XD3kOJuD3iLpHUs4i3tlll4eSisMRc7Ezt5mx1D0qG2hN_N2GhXBunTKno";
+        const convertedVapidPublicKey = urlBase64ToUint8Array(vapidPublicKey);
+        return reg.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: convertedVapidPublicKey
+        });
+      } else {
+        // old sub
+      }
+    })
+    .then(newSub => {
+      return fetch("https://pwagram-6bbfe.firebaseio.com/subscriptions.json", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json"
+        },
+        body: JSON.stringify(newSub)
+      });
+    })
+    .then(res => {
+      if (res.ok) displayConfirmNotification();
+    })
+    .catch(e => console.error("Conf push sub failed.", e));
+}
+
 function askForNotificationPermision() {
   Notification.requestPermission(result => {
     if (result !== "granted") return;
-    displayConfirmNotification();
+    //displayConfirmNotification();
+    configurePushSub();
   });
 }
 
-if ("Notification" in window) {
+if ("Notification" in window && "serviceWorker" in navigator) {
   for (let i = 0; i < enableNotificationsButtons.length; i++) {
     enableNotificationsButtons[i].style.display = "inline-block";
     enableNotificationsButtons[i].addEventListener(
