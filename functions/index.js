@@ -45,7 +45,8 @@ exports.helloWorld = functions.https.onRequest((request, response) => {
               pushConfig,
               JSON.stringify({
                 title: "New Post",
-                content: "New post added!"
+                content: "New post added!",
+                openUrl: "/help"
               })
             )
             .catch(e => console.log("web push error", e));

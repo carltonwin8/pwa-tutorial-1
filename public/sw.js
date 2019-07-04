@@ -225,10 +225,10 @@ self.addEventListener("notificationclick", event => {
           return (clnt.visibilityState = "visible");
         });
         if (client !== undefined) {
-          client.navigate("http://localhost:8080");
+          client.navigate(notification.data.url);
           client.focus();
         } else {
-          client.openWindow("http://localhost:8080");
+          client.openWindow(notification.data.url);
         }
         notification.close();
       })
@@ -242,13 +242,14 @@ self.addEventListener("notificationclose", event => {
 
 self.addEventListener("push", event => {
   console.log("push notification rec", event);
-  let data = { title: "New", content: "dummy data" };
+  let data = { title: "New", content: "dummy data", openUrl: "/" };
   if (!event.data) return;
   data = JSON.parse(event.data.text());
   const options = {
     body: data.content,
     icon: "/src/images/icons/app-icon-96x96.png",
-    badge: "/src/images/icons/app-icon-96x96.png"
+    badge: "/src/images/icons/app-icon-96x96.png",
+    data: { url: data.openUrl }
   };
   event.waitUntil(self.registration.showNotification(data.title, options));
 });
