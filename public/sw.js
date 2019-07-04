@@ -225,3 +225,16 @@ self.addEventListener("notificationclick", event => {
 self.addEventListener("notificationclose", event => {
   console.log("noti closed", event);
 });
+
+self.addEventListener("push", event => {
+  console.log("push notification rec", event);
+  let data = { title: "New", content: "dummy data" };
+  if (!event.data) return;
+  data = JSON.parse(event.data.text());
+  const options = {
+    body: data.content,
+    icon: "/src/images/icons/app-icon-96x96.png",
+    badge: "/src/images/icons/app-icon-96x96.png"
+  };
+  event.waitUntil(self.registration.showNotification(data.title, options));
+});
