@@ -12,6 +12,7 @@ var canvasElement = document.querySelector("#canvas");
 var captureButton = document.querySelector("#capture-btn");
 var imagePicker = document.querySelector("#image-picker");
 var imagePickerArea = document.querySelector("#pick-image");
+var picture;
 
 function initializeMedia() {
   if (!("mediaDevices" in navigator)) {
@@ -38,6 +39,7 @@ function initializeMedia() {
       videoPlayer.style.display = "block";
     })
     .catch(e => {
+      captureButton.style.display = "none";
       imagePickerArea.style.display = "block";
     });
 }
@@ -55,6 +57,7 @@ captureButton.addEventListener("click", event => {
   stopVideo();
   videoPlayer.style.display = "none";
   captureButton.style.display = "none";
+  picture = dataURItoBlob(canvasElement.toDataURL());
 });
 
 function openCreatePostModal() {
@@ -79,7 +82,8 @@ function openCreatePostModal() {
 }
 
 function stopVideo() {
-  videoPlayer.srcObject.getVideoTracks().forEach(track => track.stop());
+  if (videoPlayer.srcObject && videoPlayer.srcObject.getVideoTracks)
+    videoPlayer.srcObject.getVideoTracks().forEach(track => track.stop());
 }
 
 function closeCreatePostModal() {
@@ -169,15 +173,16 @@ if ("indexedDB" in window) {
   });
 }
 
-function sendData(data) {
+function sendData() {
+  const id = new Date().toISOString();
+  const postData = new FormData();
+  postData.append("id", id);
+  postData.append("title", titleInput.value);
+  postData.append("location", locationInput.value);
+  postData.append("file", picture, id + ".png");
   fetch("https://us-central1-pwagram-6bbfe.cloudfunctions.net/helloWorld", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Accept: "application/json",
-      "Access-Control-Allow-Origin": "http://localhost:8080"
-    },
-    body: JSON.stringify(data)
+    body: postData
   }).then(resp => {
     console.log("Send Data", resp);
     updateUI();
@@ -190,17 +195,14 @@ form.addEventListener("submit", event => {
     return alert("Please enter valid data");
   }
   closeCreatePostModal();
-
-  const post = {
-    title: titleInput.value,
-    location: locationInput.value,
-    id: new Date().toISOString(),
-    image:
-      "https://firebasestorage.googleapis.com/v0/b/pwagram-6bbfe.appspot.com/o/sf-boat.jpg?alt=media&token=5b1a248a-e2b4-4e88-97e0-cf2bb489f033"
-  };
-
   if ("serviceWorker" in navigator && "SyncManager" in window) {
     navigator.serviceWorker.ready.then(sw => {
+      const post = {
+        id: new Data().toISOString(),
+        title: titleInput.value,
+        location: locationInput.value,
+        picture: picture
+      };
       writeData("sync-posts", post)
         .then(() => {
           return sw.sync.register("sync-new-post");
@@ -215,6 +217,6 @@ form.addEventListener("submit", event => {
         .catch(err => console.error(err));
     });
   } else {
-    sendData(post);
+    sendData();
   }
 });

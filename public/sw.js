@@ -185,15 +185,16 @@ self.addEventListener("sync", event => {
       readAllData("sync-posts").then(data => {
         for (let dt of data) {
           console.log("db data", dt);
+          const postData = new FormData();
+          postData.append("id", dt.id);
+          postData.append("title", dt.title);
+          postData.append("location", dt.location);
+          postData.append("file", dt.picture, dt.id + ".png");
           fetch(
             "https://us-central1-pwagram-6bbfe.cloudfunctions.net/helloWorld",
             {
               method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                Accept: "application/json"
-              },
-              body: JSON.stringify(dt)
+              body: postData
             }
           )
             .then(resp => {
