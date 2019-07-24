@@ -17,6 +17,7 @@ function initializeMedia() {
   if (!("mediaDevices" in navigator)) {
     navigator.mediaDevices = {};
   }
+
   if (!("getUserMedia" in navigator.mediaDevices)) {
     navigator.mediaDevices.getUserMedia = function(constraints) {
       const getUserMedia =
@@ -29,6 +30,16 @@ function initializeMedia() {
       });
     };
   }
+
+  navigator.mediaDevices
+    .getUserMedia({ video: true })
+    .then(stream => {
+      videoPlayer.srcObject = stream;
+      videoPlayer.style.display = "block";
+    })
+    .catch(e => {
+      imagePickerArea.style.display = "block";
+    });
 }
 
 function openCreatePostModal() {
@@ -54,6 +65,9 @@ function openCreatePostModal() {
 
 function closeCreatePostModal() {
   createPostArea.style.transform = "translateY(100vh)";
+  imagePickerArea.style.display = "none";
+  videoPlayer.style.display = "none";
+  canvasElement.style.display = "none";
 }
 
 shareImageButton.addEventListener("click", openCreatePostModal);
