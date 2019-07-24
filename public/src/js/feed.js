@@ -42,6 +42,21 @@ function initializeMedia() {
     });
 }
 
+captureButton.addEventListener("click", event => {
+  canvasElement.style.display = "block";
+  const context = canvasElement.getContext("2d");
+  context.drawImage(
+    videoPlayer,
+    0,
+    0,
+    canvas.width,
+    videoPlayer.videoHeight / (videoPlayer.videoWidth / canvas.width)
+  );
+  stopVideo();
+  videoPlayer.style.display = "none";
+  captureButton.style.display = "none";
+});
+
 function openCreatePostModal() {
   createPostArea.style.display = "block";
   createPostArea.style.transform = "translateY(0)";
@@ -63,11 +78,17 @@ function openCreatePostModal() {
   deferredPrompt = null;
 }
 
+function stopVideo() {
+  videoPlayer.srcObject.getVideoTracks().forEach(track => track.stop());
+}
+
 function closeCreatePostModal() {
   createPostArea.style.transform = "translateY(100vh)";
   imagePickerArea.style.display = "none";
   videoPlayer.style.display = "none";
+  stopVideo();
   canvasElement.style.display = "none";
+  captureButton.style.display = "block";
 }
 
 shareImageButton.addEventListener("click", openCreatePostModal);
