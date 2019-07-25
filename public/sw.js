@@ -191,6 +191,8 @@ self.addEventListener("sync", event => {
           postData.append("title", dt.title);
           postData.append("location", dt.location);
           postData.append("file", dt.picture, dt.id + ".png");
+          postData.append("rawLocationLat", dt.rawLocation.lat);
+          postData.append("rawLocationLng", dt.rawLocation.lng);
           fetch(
             "https://us-central1-pwagram-6bbfe.cloudfunctions.net/storePostData",
             {

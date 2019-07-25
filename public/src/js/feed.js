@@ -13,6 +13,40 @@ var captureButton = document.querySelector("#capture-btn");
 var imagePicker = document.querySelector("#image-picker");
 var imagePickerArea = document.querySelector("#pick-image");
 var picture;
+var locationBtn = document.querySelector("#location-btn");
+var locationLoader = document.querySelector("#location-loader");
+let fetchedLocation;
+
+locationBtn.addEventListener("click", event => {
+  if (!("geolocation" in navigator)) return;
+  locationBtn.style.display = "none";
+  locationLoader.style.display = "inline-block";
+  navigator.geolocation.getCurrentPosition(
+    position => {
+      locationBtn.style.display = "inline";
+      locationLoader.style.display = "none";
+      fetchedLocation = { lat: position.coords.latitude, lng: 0 };
+      locationInput.value = "Vegas";
+      document.querySelector("#manual-location").classList.add("is-focused");
+    },
+    error => {
+      console.log(error);
+      locationBtn.style.display = "inline";
+      locationLoader.style.display = "none";
+      alert("Couldn't fetch location. Please enter one manually.");
+      fetchedLocation = { lat: null, lng: null };
+    },
+    { timeout: 5000 }
+  );
+});
+
+function initializeLocation() {
+  if (!("geolocation" in navigator)) {
+    locationBtn.style.display = "none";
+  }
+  locationLoader.style.display = "none";
+  locationInput.value = "";
+}
 
 function initializeMedia() {
   if (!("mediaDevices" in navigator)) {
@@ -68,6 +102,7 @@ function openCreatePostModal() {
   createPostArea.style.display = "block";
   createPostArea.style.transform = "translateY(0)";
   initializeMedia();
+  initializeLocation();
   // if ("serviceWorker" in navigator) {
   //   navigator.serviceWorker.getRegistrations().then(regs => {
   //     for (let i = 0; i < regs.length; i++) {
@@ -97,6 +132,8 @@ function closeCreatePostModal() {
   stopVideo();
   canvasElement.style.display = "none";
   captureButton.style.display = "block";
+  locationBtn.style.display = "inline";
+  locationLoader.style.display = "none";
 }
 
 shareImageButton.addEventListener("click", openCreatePostModal);
@@ -184,6 +221,8 @@ function sendData() {
   postData.append("title", titleInput.value);
   postData.append("location", locationInput.value);
   postData.append("file", picture, id + ".png");
+  postData.append("rawLocationLat", fetchedLocation.lat);
+  postData.append("rawLocationLng", fetchedLocation.lng);
   fetch("https://us-central1-pwagram-6bbfe.cloudfunctions.net/storePostData", {
     method: "POST",
     body: postData
@@ -205,7 +244,8 @@ form.addEventListener("submit", event => {
         id: new Date().toISOString(),
         title: titleInput.value,
         location: locationInput.value,
-        picture: picture
+        picture: picture,
+        rawLocation: fetchedLocation
       };
       writeData("sync-posts", post)
         .then(() => {
