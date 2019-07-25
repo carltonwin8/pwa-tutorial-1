@@ -180,7 +180,7 @@ function sendData() {
   postData.append("title", titleInput.value);
   postData.append("location", locationInput.value);
   postData.append("file", picture, id + ".png");
-  fetch("https://us-central1-pwagram-6bbfe.cloudfunctions.net/helloWorld", {
+  fetch("https://us-central1-pwagram-6bbfe.cloudfunctions.net/storePostData", {
     method: "POST",
     body: postData
   }).then(resp => {
@@ -198,7 +198,7 @@ form.addEventListener("submit", event => {
   if ("serviceWorker" in navigator && "SyncManager" in window) {
     navigator.serviceWorker.ready.then(sw => {
       const post = {
-        id: new Data().toISOString(),
+        id: new Date().toISOString(),
         title: titleInput.value,
         location: locationInput.value,
         picture: picture
