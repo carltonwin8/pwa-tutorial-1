@@ -12,6 +12,7 @@ const STATIC_FILES = [
   "/favicon.ico",
   "/manifest.json",
   "/src/images/main-image.jpg",
+  "/src/js/utility.js",
   "/src/js/app.js",
   "/src/js/idb.js",
   "/src/js/feed.js",
