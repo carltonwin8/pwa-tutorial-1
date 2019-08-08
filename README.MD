@@ -13,4 +13,6 @@ Use:
 - `firebase deploy` - to deploy once code added to the functions directory
 - `npm install web-push` and `npx web-push generate-vapid-keys` for keys
 - for workbox
-  - `npm run sw:setup` then `npm run sw:gen`
+  - `npm run sw:setup` - one time run to create a workbox-config.js
+  - `npm run sw:gen` - generate a service worker (sw) using workbox-config.js
+  - `npm run sw:inject` - gen a sw using workbox-config.js and a sw tempale
