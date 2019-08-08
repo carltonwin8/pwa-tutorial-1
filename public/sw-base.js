@@ -4,7 +4,15 @@ importScripts(
 
 workbox.routing.registerRoute(
   new RegExp(/.*(?:firebasestorage\.googleapis)\.com.*$/),
-  new workbox.strategies.StaleWhileRevalidate({ cacheName: "firebase-images" })
+  new workbox.strategies.StaleWhileRevalidate({
+    cacheName: "firebase-images",
+    plugins: [
+      new workbox.expiration.Plugin({
+        maxEntries: 60,
+        maxAgeSeconds: 30 * 24 * 60 * 60 // 30 Days
+      })
+    ]
+  })
 );
 
 workbox.routing.registerRoute(

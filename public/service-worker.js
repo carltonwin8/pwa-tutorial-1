@@ -4,7 +4,15 @@ importScripts(
 
 workbox.routing.registerRoute(
   new RegExp(/.*(?:firebasestorage\.googleapis)\.com.*$/),
-  new workbox.strategies.StaleWhileRevalidate({ cacheName: "firebase-images" })
+  new workbox.strategies.StaleWhileRevalidate({
+    cacheName: "firebase-images",
+    plugins: [
+      new workbox.expiration.Plugin({
+        maxEntries: 60,
+        maxAgeSeconds: 30 * 24 * 60 * 60 // 30 Days
+      })
+    ]
+  })
 );
 
 workbox.routing.registerRoute(
@@ -77,7 +85,7 @@ workbox.precaching.precacheAndRoute([
   },
   {
     "url": "sw-base.js",
-    "revision": "64ada5edbbd148bf9134e5bad65449ed"
+    "revision": "9ea35bba17bc8a94692581100103bf23"
   },
   {
     "url": "src/images/main-image-lg.jpg",
