@@ -36,18 +36,14 @@ workbox.routing.registerRoute(
 
 workbox.routing.registerRoute(
   "https://pwagram-6bbfe.firebaseio.com/posts.json",
-  async args => {
-    console.log("args", args);
-    return await fetch(args.event.request).then(response => {
-      const clonedResp = response.clone();
-      console.log("fetch happened", clonedResp);
-      clearAllData("posts")
-        .then(() => clonedResp.json())
-        .then(data => {
-          for (let key in data) writeData("posts", data[key]);
-        });
-      return response;
-    });
+  async ({ event }) => {
+    const response = await fetch(event.request);
+    const clonedResp = response.clone();
+    console.log("fetch happened", clonedResp);
+    clearAllData("posts");
+    const json = clonedResp.json();
+    for (let key in json) writeData("posts", json[key]);
+    return response;
   }
 );
 
@@ -56,25 +52,33 @@ workbox.routing.registerRoute(
     routeData.url.pathname !== "/" &&
     routeData.event.request.headers.get("accept").includes("text/html"),
   async ({ event }) => {
-    try {
-      const resp = await caches.match(event.request);
-      if (resp) return resp;
-      try {
-        const response = await fetch(event.request);
-        const cache = await caches.open("dynamic");
-        cache.put(event.request.url, response.clone());
-        return response;
-      } catch (err) {
-        console.log("dynamic response failed for", event.request);
-        let resp2 = await caches.match(
-          workbox.precaching.getCacheKeyForURL("/offline.html")
-        );
-        console.log("match", resp2);
-        return resp2;
-      }
-    } catch (e) {
-      console.log("cache error", e);
-    }
+    return await caches
+      .match(event.request)
+      .then(resp => {
+        if (resp) return resp;
+        console.log("fetching because no cache for", event.request);
+        return fetch(event.request)
+          .then(response => {
+            return caches
+              .open("dynamic")
+              .then(cache => {
+                cache.put(event.request.url, response.clone());
+                return response;
+              })
+              .catch(e => console.log("dynamic cache error", e));
+          })
+          .catch(err => {
+            console.log("fetch response failed for", event.request);
+            return caches
+              .match(workbox.precaching.getCacheKeyForURL("/offline.html"))
+              .then(resp2 => {
+                console.log("match", resp2);
+                return resp2;
+              })
+              .catch(e => console.log("precache cache error", e));
+          });
+      })
+      .catch(e => console.log("cache error", e));
   }
 );
 
@@ -133,7 +137,7 @@ workbox.precaching.precacheAndRoute([
   },
   {
     "url": "sw-base.js",
-    "revision": "b5aba4dadf81ee0dd69b37ff3164959c"
+    "revision": "eed2459d1fd96cb27074627d4de0b72a"
   },
   {
     "url": "src/images/main-image-lg.jpg",
