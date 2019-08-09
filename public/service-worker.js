@@ -1,6 +1,8 @@
 importScripts(
   "https://storage.googleapis.com/workbox-cdn/releases/4.3.1/workbox-sw.js"
 );
+importScripts("/src/js/idb.js");
+importScripts("/src/js/utility.js");
 
 workbox.routing.registerRoute(
   new RegExp(/.*(?:firebasestorage\.googleapis)\.com.*$/),
@@ -25,9 +27,28 @@ workbox.routing.registerRoute(
   new workbox.strategies.StaleWhileRevalidate({ cacheName: "material-css" })
 );
 
+/*
 workbox.routing.registerRoute(
   new RegExp(/.*(?:firebaseio)\.com.*$/),
   new workbox.strategies.StaleWhileRevalidate({ cacheName: "firebase-json" })
+);
+*/
+
+workbox.routing.registerRoute(
+  "https://pwagram-6bbfe.firebaseio.com/posts.json",
+  async args => {
+    console.log("args", args);
+    return await fetch(args.event.request).then(response => {
+      const clonedResp = response.clone();
+      console.log("fetch happened", clonedResp);
+      clearAllData("posts")
+        .then(() => clonedResp.json())
+        .then(data => {
+          for (let key in data) writeData("posts", data[key]);
+        });
+      return response;
+    });
+  }
 );
 
 workbox.precaching.precacheAndRoute([
@@ -85,7 +106,7 @@ workbox.precaching.precacheAndRoute([
   },
   {
     "url": "sw-base.js",
-    "revision": "9ea35bba17bc8a94692581100103bf23"
+    "revision": "0c4034507cad37006962bf34f2684552"
   },
   {
     "url": "src/images/main-image-lg.jpg",
