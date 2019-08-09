@@ -51,6 +51,33 @@ workbox.routing.registerRoute(
   }
 );
 
+workbox.routing.registerRoute(
+  routeData =>
+    routeData.url.pathname !== "/" &&
+    routeData.event.request.headers.get("accept").includes("text/html"),
+  async ({ event }) => {
+    try {
+      const resp = await caches.match(event.request);
+      if (resp) return resp;
+      try {
+        const response = await fetch(event.request);
+        const cache = await caches.open("dynamic");
+        cache.put(event.request.url, response.clone());
+        return response;
+      } catch (err) {
+        console.log("dynamic response failed for", event.request);
+        let resp2 = await caches.match(
+          workbox.precaching.getCacheKeyForURL("/offline.html")
+        );
+        console.log("match", resp2);
+        return resp2;
+      }
+    } catch (e) {
+      console.log("cache error", e);
+    }
+  }
+);
+
 workbox.precaching.precacheAndRoute([
   {
     "url": "404.html",
@@ -106,7 +133,7 @@ workbox.precaching.precacheAndRoute([
   },
   {
     "url": "sw-base.js",
-    "revision": "0c4034507cad37006962bf34f2684552"
+    "revision": "b5aba4dadf81ee0dd69b37ff3164959c"
   },
   {
     "url": "src/images/main-image-lg.jpg",
