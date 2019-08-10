@@ -5,9 +5,9 @@ importScripts("/src/js/idb.js");
 importScripts("/src/js/utility.js");
 
 workbox.routing.registerRoute(
-  new RegExp(/.*(?:firebasestorage\.googleapis)\.com.*$/),
+  new RegExp(/.*(?:googleapis|gstatic)\.com.*$/),
   new workbox.strategies.StaleWhileRevalidate({
-    cacheName: "firebase-images",
+    cacheName: "google-fonts",
     plugins: [
       new workbox.expiration.Plugin({
         maxEntries: 60,
@@ -18,13 +18,15 @@ workbox.routing.registerRoute(
 );
 
 workbox.routing.registerRoute(
-  new RegExp(/.*(?:googleapis|gstatic)\.com.*$/),
-  new workbox.strategies.StaleWhileRevalidate({ cacheName: "google-fonts" })
+  "https://cdnjs.cloudflare.com/ajax/libs/material-design-lite/1.3.0/material.indigo-pink.min.css",
+  new workbox.strategies.StaleWhileRevalidate({ cacheName: "material-css" })
 );
 
 workbox.routing.registerRoute(
-  "https://cdnjs.cloudflare.com/ajax/libs/material-design-lite/1.3.0/material.indigo-pink.min.css",
-  new workbox.strategies.StaleWhileRevalidate({ cacheName: "material-css" })
+  new RegExp(/.*(?:firebasestorage\.googleapis)\.com.*$/),
+  new workbox.strategies.StaleWhileRevalidate({
+    cacheName: "post-images"
+  })
 );
 
 /*
@@ -37,13 +39,25 @@ workbox.routing.registerRoute(
 workbox.routing.registerRoute(
   "https://pwagram-6bbfe.firebaseio.com/posts.json",
   async ({ event }) => {
-    const response = await fetch(event.request);
-    const clonedResp = response.clone();
-    console.log("fetch happened", clonedResp);
-    clearAllData("posts");
-    const json = clonedResp.json();
-    for (let key in json) writeData("posts", json[key]);
-    return response;
+    let r;
+    return await fetch(event.request)
+      .then(response => {
+        r = response;
+        const clonedResp = response.clone();
+        console.log("fetch happened", clonedResp);
+        clearAllData("posts")
+          .then(() => clonedResp.json())
+          .then(json => {
+            console.log("json", json);
+            const pArr = Object.keys(json).map(key =>
+              writeData("posts", json[key])
+            );
+            return Promise.all(pArr);
+          })
+          .then(() => r)
+          .catch(err => console.error("Error! With posts indexDb", err));
+      })
+      .catch(err => console.log("Failed fetch for", event.request));
   }
 );
 
@@ -137,7 +151,7 @@ workbox.precaching.precacheAndRoute([
   },
   {
     "url": "sw-base.js",
-    "revision": "eed2459d1fd96cb27074627d4de0b72a"
+    "revision": "5653abed08c83467fb75e7149d46fc87"
   },
   {
     "url": "src/images/main-image-lg.jpg",
