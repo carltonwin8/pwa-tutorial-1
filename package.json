@@ -6,6 +6,7 @@
   "scripts": {
     "start": "http-server -c-1",
     "server": "node server.js",
+    "minify": "uflifyjs ./public/src/js/app.js -o ./public/src/js/app.min.js --compress --mangle",
     "sw:setup": "workbox wizard",
     "sw:gen": "workbox generateSW workbox-config.js",
     "sw:inject": "workbox injectManifest workbox-config.js"
@@ -23,7 +24,8 @@
   "devDependencies": {
     "express": "^4.17.1",
     "http-server": "^0.11.1",
-    "morgan": "^1.9.1"
+    "morgan": "^1.9.1",
+    "uglifyjs": "^2.4.11"
   },
   "dependencies": {
     "workbox-cli": "^4.3.1"
